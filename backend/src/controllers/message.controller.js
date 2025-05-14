@@ -36,10 +36,10 @@ export const sendMessage = async(req,res)=>{
     try {
         const {text, image} = req.body;
         const {id:receiverId} = req.params;
-        const senderId = req._user.id;
+        const senderId = req.user._id;
 
         let imageUrl;
-        if(imageUrl){
+        if(image){
             //Upload image to cloudinary
             const uploadResponse = await cloudinary.uploader.upload(image);
             imageUrl = uploadResponse.secure_url;
@@ -59,7 +59,7 @@ export const sendMessage = async(req,res)=>{
             io.to(receiverSocketId).emit("newMessage",newMessage);
         }
 
-        res.json(201).json(newMessage)
+        res.status(201).json(newMessage)
     } catch (error) {
         console.log("Error in sendMessage controller: ",error.message)
         res.status(500).json({error:"Internal server error"})
