@@ -14,10 +14,11 @@ router.post("/", async (req, res) => {
 
   try {
     const replies = await generateSmartReplies(message);
-    res.json({ replies });
+    console.log(replies);
+    return res.json({ replies });
   } catch (err) {
     console.error("Smart Reply Error:", err);
-    res.status(500).json({ error: "Failed to generate smart replies" });
+    res.status(500).json({ error: err.message || "Failed to generate smart replies" });
   }
 });
 

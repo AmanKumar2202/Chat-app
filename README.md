@@ -115,8 +115,13 @@ npm run dev
 
 ---
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## 🔗 Deployed Link
 [https://whisprai-nine.vercel.app](https://whisprai-nine.vercel.app)
 =======
 
 >>>>>>> c797755 (Created readme)
+=======
+   ## 🔗 Deployed Link
+   [https://whisprai-nine.vercel.app](https://whisprai-nine.vercel.app)
+>>>>>>> 97aa948 (Adding smart Reply feature)

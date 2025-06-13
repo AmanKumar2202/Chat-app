@@ -9,6 +9,7 @@ export const useChatStore = create((set,get)=>({
     selectedUser:null,
     isUsersLoading:false,
     isMessagesLoading:false,
+    smartReplyEnabled:false,
 
     getUsers:async()=>{
         set({isUsersLoading:true});
@@ -62,6 +63,9 @@ export const useChatStore = create((set,get)=>({
         const socket = useAuthStore.getState().socket;
         socket.off("newMessage");
     },
-    
+    toggleSmartReply:()=>{
+        set((state)=>({smartReplyEnabled: !state.smartReplyEnabled}))
+    },
+    setSmartReplyEnabled: (enabled) => set({ smartReplyEnabled: enabled }),
     setSelectedUser:(selectedUser)=> set({selectedUser})
 }))

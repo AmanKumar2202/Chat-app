@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 
-const SmartReply = ({ incomingMessage, onReply }) => {
-  const [smartReplies, setSmartReplies] = useState([]);
+const SmartReply = ({ incomingMessage, onReply, replies }) => {
+  const [smartReplies, setSmartReplies] = useState(replies || []);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!incomingMessage) return;
+    // If replies are passed as props, use them directly and skip fetch
+    if (replies && replies.length > 0) {
+      setSmartReplies(replies);
+      return;
+    }
+
+    // If no incoming message, exit
+    if (!incomingMessage || replies?.length > 0) return;
 
     // Function to fetch smart replies from the backend
     const fetchSmartReplies = async () => {
@@ -15,7 +22,9 @@ const SmartReply = ({ incomingMessage, onReply }) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: incomingMessage }),
-        });
+        })
+          .then((res) => res.json())
+          .then(console.log);
 
         const data = await response.json();
         setSmartReplies(data.replies || []);
@@ -27,32 +36,32 @@ const SmartReply = ({ incomingMessage, onReply }) => {
     };
 
     fetchSmartReplies();
-  }, [incomingMessage]);
+  }, [incomingMessage, replies]);
+  if (isLoading) {
+    return (
+      <div className="text-sm text-gray-500 mt-2">Loading suggestions...</div>
+    );
+  }
+
+  if (smartReplies.length === 0) {
+    return (
+      <div className="text-sm text-gray-400 mt-2">
+        No suggestions available.
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col space-y-2 mt-3">
-      {isLoading ? (
-        <div className="text-sm text-gray-500">Loading suggestions...</div>
-      ) : (
-        <>
-          {smartReplies.length > 0 ? (
-            <div className="flex gap-2">
-              {/* Display the smart reply suggestions */}
-              {smartReplies.map((reply, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => onReply(reply)}
-                  className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                >
-                  {reply}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-gray-500">No suggestions available.</div>
-          )}
-        </>
-      )}
+    <div className="flex gap-2 mt-3 flex-wrap">
+      {smartReplies.map((reply, idx) => (
+        <button
+          key={idx}
+          onClick={() => onReply(reply)}
+          className="bg-blue-500 text-white py-1 px-3 rounded-lg text-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        >
+          {reply}
+        </button>
+      ))}
     </div>
   );
 };

@@ -1,37 +1,56 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { useChatStore } from '../store/useChatStore'
-import ChatHeader from './ChatHeader';
-import MessageInput from './MessageInput';
-import MessageSkeleton from './skeletons/MessageSkeleton';
-import { useAuthStore } from '../store/useAuthStore';
-import { formatMessageTime } from '../lib/utils';
-import SmartReply from './SmartReply';
+import React, { useEffect, useRef, useState } from "react";
+import { useChatStore } from "../store/useChatStore";
+import ChatHeader from "./ChatHeader";
+import MessageInput from "./MessageInput";
+import MessageSkeleton from "./skeletons/MessageSkeleton";
+import { useAuthStore } from "../store/useAuthStore";
+import { formatMessageTime } from "../lib/utils";
+import SmartReply from "./SmartReply";
+import SmartReplyToggleButton from "./SmartReplyToggleButton";
 
 const ChatContainer = () => {
-  const {messages,getMessages,isMessagesLoading,selectedUser, subscribeToMessages, unsubscribeFromMessages}=useChatStore();
-  const {authUser} = useAuthStore();
+  const {
+    messages,
+    getMessages,
+    isMessagesLoading,
+    selectedUser,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+    smartReplyEnabled,
+    setSmartReplyEnabled,
+  } = useChatStore();
+  const { authUser } = useAuthStore();
   const [smartReplies, setSmartReplies] = useState([]);
   const messageEndRef = useRef(null);
   const [translations, setTranslations] = useState({});
 
   //useEffect should run without any conditions so used above if condition
-  useEffect(()=>{
+  useEffect(() => {
     getMessages(selectedUser._id);
     subscribeToMessages();
 
-    return ()=> unsubscribeFromMessages();
-  },[selectedUser._id,getMessages,subscribeToMessages,unsubscribeFromMessages])
+    return () => unsubscribeFromMessages();
+  }, [
+    selectedUser._id,
+    getMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  ]);
 
-  useEffect(()=>{
-    if(messageEndRef.current && messages){
-      messageEndRef.current.scrollIntoView({behavior:"smooth"})
-    } 
-  },[messages])
-
-  // Fetch smart replies when a new message is received
-  const handleIncomingMessage = (messageText) => {
-    fetchSmartReplies(messageText);
-  };
+  useEffect(() => {
+    if (messageEndRef.current && messages) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+    // Fetch smart replies for the latest incoming message
+    if (smartReplyEnabled) {
+      const lastIncomingMsg = [...messages]
+        .reverse()
+        .find((msg) => msg.senderId !== authUser._id && msg.text);
+      if (lastIncomingMsg) {
+        fetchSmartReplies(lastIncomingMsg.text);
+      }
+    }
+  }, [messages, smartReplyEnabled]);
 
   const fetchSmartReplies = async (messageText) => {
     try {
@@ -64,39 +83,47 @@ const ChatContainer = () => {
   };
 
   //Translate into english language
-    const handleTranslate = async (messageId, text) => {
+  const handleTranslate = async (messageId, text) => {
     try {
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
       });
       const data = await res.json();
-      setTranslations(prev => ({ ...prev, [messageId]: data.translated }));
+      setTranslations((prev) => ({ ...prev, [messageId]: data.translated }));
     } catch (err) {
-      console.error('Translation failed:', err);
+      console.error("Translation failed:", err);
     }
   };
 
-
-  if(isMessagesLoading){ 
+  if (isMessagesLoading) {
     return (
-    <div className="flex-1 flex flex-col overflow-auto">
-      <ChatHeader/>
-      <MessageSkeleton/>
-      <MessageInput/>
-    </div>
-    )
+      <div className="flex-1 flex flex-col overflow-auto">
+        <ChatHeader />
+        <MessageSkeleton />
+        <MessageInput />
+      </div>
+    );
   }
   return (
     <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
 
+      <div className="px-4 py-2 border-b">
+        <SmartReplyToggleButton 
+          label="Enable Smart Replies"
+          enabled={smartReplyEnabled}
+          onToggle={setSmartReplyEnabled}
+        />
+      </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
             key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+            className={`chat ${
+              message.senderId === authUser._id ? "chat-end" : "chat-start"
+            }`}
             ref={messageEndRef}
           >
             <div className=" chat-image avatar">
@@ -125,45 +152,50 @@ const ChatContainer = () => {
                 />
               )}
               {message.text && (
-                  <>
+                <>
                   <p>{message.text}</p>
 
                   {/* Trigger smart reply suggestions for the incoming message */}
                   {message.senderId !== authUser._id && (
-                    <SmartReply 
-                      incomingMessage={message.text}
+                    <SmartReply
+                      incomingMessage={smartReplies[0]?.message || ""}
                       onReply={handleReply}
+                      replies={smartReplies}
                     />
                   )}
-                  </>
-
+                </>
               )}
-              {message.senderId !== authUser._id && !translations[message._id] && (
-                <button
-                  className="text-blue-500 text-sm mt-1 hover:underline"
-                  onClick={() => handleTranslate(message._id, message.text)}
-                >
-                  Translate
-                </button>
-              )}
+              {message.senderId !== authUser._id &&
+                !translations[message._id] && (
+                  <button
+                    className="text-blue-500 text-sm mt-1 hover:underline"
+                    onClick={() => handleTranslate(message._id, message.text)}
+                  >
+                    Translate
+                  </button>
+                )}
 
               {translations[message._id] && (
                 <p className="text-sm text-gray-500 mt-1 italic">
                   {translations[message._id]}
                 </p>
               )}
-
             </div>
           </div>
         ))}
       </div>
-
+      {/* SmartReply Component (once at bottom, based on toggle & incoming message) */}
+      
       <MessageInput />
     </div>
   );
+};
 
-  
-}
+export default ChatContainer;
 
-export default ChatContainer
-
+// {smartReplyEnabled && smartReplies.length > 0 && (
+//         <div className="px-4 mt-2 mb-3">
+//           <SmartReply incomingMessage={message.text} onReply={handleReply} />
+//           {/* replies={smartReplies} */}
+//         </div>
+//       )}
