@@ -7,6 +7,8 @@ import {connectDB} from "./lib/db.js"
 import authRoutes from "./routes/auth.route.js"
 import messageRoutes from "./routes/message.route.js"
 import smartReplyRoutes from "./routes/smartReply.route.js"
+import translateRoutes from "./routes/translate.route.js"
+import transcribeRoutes from "./routes/transcribe.route.js"
 import { app, server } from "./lib/socket.js"
 
 dotenv.config()
@@ -26,6 +28,8 @@ app.use(express.json());
 app.use("/api/auth",authRoutes)
 app.use("/api/messages",messageRoutes)
 app.use("/api/smart-replies",smartReplyRoutes)
+app.use("/api/translate",translateRoutes)
+app.use("/api/transcribe",transcribeRoutes)
 
 if(process.env.NODE_ENV === "production"){
     app.use(express.static(path.join(__dirname,"../frontend/dist")))

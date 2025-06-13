@@ -12,6 +12,7 @@ const ChatContainer = () => {
   const {authUser} = useAuthStore();
   const [smartReplies, setSmartReplies] = useState([]);
   const messageEndRef = useRef(null);
+  const [translations, setTranslations] = useState({});
 
   //useEffect should run without any conditions so used above if condition
   useEffect(()=>{
@@ -61,6 +62,22 @@ const ChatContainer = () => {
     // Add the reply to the messages list (this can be updated with your actual message sending logic)
     getMessages(selectedUser._id); // refresh the message list
   };
+
+  //Translate into english language
+    const handleTranslate = async (messageId, text) => {
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      setTranslations(prev => ({ ...prev, [messageId]: data.translated }));
+    } catch (err) {
+      console.error('Translation failed:', err);
+    }
+  };
+
 
   if(isMessagesLoading){ 
     return (
@@ -120,7 +137,22 @@ const ChatContainer = () => {
                   )}
                   </>
 
-                )}
+              )}
+              {message.senderId !== authUser._id && !translations[message._id] && (
+                <button
+                  className="text-blue-500 text-sm mt-1 hover:underline"
+                  onClick={() => handleTranslate(message._id, message.text)}
+                >
+                  Translate
+                </button>
+              )}
+
+              {translations[message._id] && (
+                <p className="text-sm text-gray-500 mt-1 italic">
+                  {translations[message._id]}
+                </p>
+              )}
+
             </div>
           </div>
         ))}

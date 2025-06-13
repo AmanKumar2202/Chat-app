@@ -3,6 +3,15 @@ import { connectDB } from "../lib/db.js";
 import User from "../models/user.model.js"
 config();
 const seedUsers = [
+    //Chat Bot
+    {
+      _id: "bot_user_id",
+      fullName: "ChatAI",
+      email: "ai@chatapp.com",
+      isBot: true,
+      // profilePic: "https://yourcdn.com/ai-avatar.png"
+      profilePic: "https://www.google.com/imgres?q=ai%20robot%20image%20for%20profile%20pic&imgurl=https%3A%2F%2Fimgcdn.stablediffusionweb.com%2F2024%2F6%2F12%2F0d2807f6-64c3-402b-ba4f-d92c6cf29bd7.jpg&imgrefurl=https%3A%2F%2Fstablediffusionweb.com%2Fimage%2F9290851-purple-ai-robot-profile-picture&docid=IqvcMjUFb82lUM&tbnid=d7Yu3lnEshiztM&vet=12ahUKEwjxl_fn0KONAxVlafUHHRjVGdUQM3oECGYQAA..i&w=1024&h=1024&hcb=2&ved=2ahUKEwjxl_fn0KONAxVlafUHHRjVGdUQM3oECGYQAA"
+    },
     // Female Users
     {
       email: "emma.thompson@example.com",

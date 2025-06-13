@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
-import { useChatStore } from '../store/useChatStore';
+import { useChatStore } from '../store/useChatStore.js';
 import { Image, Send, X } from 'lucide-react';
+import VoiceUploader from './VoiceUploader.jsx';
 
 const MessageInput = () => {
     const [text, setText] = useState("");
@@ -79,10 +80,13 @@ const MessageInput = () => {
           <input
             type="file"
             accept="image/*"
-            className="hidden"  //because showing it would be ugly and intead the below button implementation is good
+            className="hidden"  //because showing it would be ugly and instead the below button implementation is good
             ref={fileInputRef}
             onChange={handleImageChange}
           />
+          
+          {/* voice to text feature here */}
+          <VoiceUploader onTranscribe={(text) => setText(text)} />
 
           <button
             type="button"

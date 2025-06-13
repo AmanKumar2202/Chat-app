@@ -1,4 +1,3 @@
-// routes/smartReply.route.js
 
 import express from "express"
 import { generateSmartReplies } from "../utils/smartReply.js";
